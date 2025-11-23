@@ -1,3 +1,6 @@
+[![Build status](https://github.com/enggsoniasoni-cell/appnakshtraa/actions/workflows/ci.yml/badge.svg)](https://github.com/enggsoniasoni-cell/appnakshtraa/actions)
+
+[![Pages](https://img.shields.io/badge/Pages-gh--pages-blue)](https://enggsoniasoni-cell.github.io/appnakshtraa/)
 ﻿
 <a href="https://vedastro.org">
 <img
