@@ -1,0 +1,58 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['8.0']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ matrix.dotnet-version }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ matrix.dotnet-version }}-
+
+      - name: Locate solution
+        id: find_sln
+        run: |
+          echo "sln=$(ls *.sln | head -n1)" >> $GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore "${{ steps.find_sln.outputs.sln }}"
+
+      - name: Build
+        run: dotnet build "${{ steps.find_sln.outputs.sln }}" --configuration Release --no-restore
+
+      - name: Test
+        run: |
+          # run tests if any exist
+          if ls **/*Tests*.csproj 1> /dev/null 2>&1; then
+            dotnet test "${{ steps.find_sln.outputs.sln }}" --configuration Release --no-build --verbosity normal
+          else
+            echo "No test projects found."
+          fi
+
+      - name: Upload build artifacts (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            **/bin/Release
