@@ -1,6 +1,127 @@
 name: .NET CI
 
 on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build (Linux SDK-style)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.0', '8.0']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ matrix.dotnet-version }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ matrix.dotnet-version }}-
+
+      - name: Build SDK-style projects (Linux)
+        shell: bash
+        run: |
+          set -e
+          echo "Finding SDK-style project files (containing '<Project Sdk=')"
+          files=$(grep -RIl --include="*.csproj" "<Project Sdk=" . || true)
+          if [ -z "$files" ]; then
+            echo "No SDK-style projects found. Skipping dotnet build on Linux." 
+            exit 0
+          fi
+          for proj in $files; do
+            echo "Restoring $proj"
+            dotnet restore "$proj"
+            echo "Building $proj"
+            dotnet build "$proj" -c Release --no-restore
+          done
+
+      - name: Test
+        run: |
+          # run tests if any exist
+          if ls **/*Tests*.csproj 1> /dev/null 2>&1; then
+            for t in $(ls **/*Tests*.csproj); do
+              dotnet test "$t" --configuration Release --no-build --verbosity normal || exit 1
+            done
+          else
+            echo "No test projects found."
+          fi
+
+  build-windows:
+    name: Build (Windows MSBuild)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.0.3
+
+      - name: Setup .NET SDK (8.0)
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+
+      - name: Restore NuGet packages
+        run: |
+          set -e
+          if command -v nuget >/dev/null 2>&1; then
+            nuget restore "Nakshatraa diaries.sln"
+          else
+            dotnet restore "Nakshatraa diaries.sln"
+          fi
+
+      - name: Build solution with MSBuild
+        run: msbuild "Nakshatraa diaries.sln" /p:Configuration=Release
+
+      - name: Publish Website
+        run: dotnet publish Website/Website.csproj -c Release -o publish
+
+      - name: Upload published wwwroot
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-wwwroot
+          path: publish/wwwroot
+
+  deploy:
+    name: Deploy Website to GitHub Pages
+    needs: [build, build-windows]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download published wwwroot
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-wwwroot
+          path: publish/wwwroot
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          publish_branch: gh-pages
+          publish_dir: ./publish/wwwroot
+          publish_repo: ${{ github.repository }}
+          allow_empty_commit: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+name: .NET CI
+
+on:
   name: .NET CI
 
   on:
