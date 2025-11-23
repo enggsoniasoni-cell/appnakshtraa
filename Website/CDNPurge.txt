@@ -1,0 +1,1 @@
+az cdn endpoint purge --resource-group Nakshatraa diaries --profile-name CDNProfile --name vedastro --content-paths "/*"

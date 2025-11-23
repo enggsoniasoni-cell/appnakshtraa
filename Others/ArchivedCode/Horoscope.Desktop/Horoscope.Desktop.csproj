@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject>Horoscope.Desktop.Start</StartupObject>
+  <RootNamespace>NakshatraaDiaries</RootNamespace><AssemblyName>NakshatraaDiaries</AssemblyName></PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Library\Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="data\PersonList.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\PredictionDataList.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="wpf\MainWindow.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="wpf\Spinner.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="wpf\StyleDictionary.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+</Project>

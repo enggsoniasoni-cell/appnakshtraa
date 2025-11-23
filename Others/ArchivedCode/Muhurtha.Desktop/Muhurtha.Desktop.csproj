@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject>Muhurtha.Desktop.Start</StartupObject>
+  <RootNamespace>NakshatraaDiaries</RootNamespace><AssemblyName>NakshatraaDiaries</AssemblyName></PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Library\Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="data\EventDataList.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="data\PersonList.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="google_credentials.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
